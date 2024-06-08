@@ -16,6 +16,8 @@
     "moduleResolution": "node",
   },
   "include": [
-    "src/**/*.ts"
+    "vite.config.ts",
+    "src/**/*.ts",
+    "ui/app.js"
   ]
 }

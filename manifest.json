@@ -10,9 +10,7 @@
     "figma"
   ],
   "ui":{
-    "main": "ui.html",
-    "colorScheme": "colorScheme.html",
-    "icon": "tint-smith.svg"
+    "main": "dist/index.html"
   },
   "networkAccess": {
     "allowedDomains": [
