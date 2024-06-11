@@ -242,14 +242,22 @@ function addColor(color) {
       document.getElementById(`picker-container-${colorNumber}`).remove();
     };
   }
-  // * Send signal to connect tints from picker
   const colorPicker = document.getElementById(`color-input-${colorNumber}`);
-
   const colorName = document.getElementById(`colorName-${colorNumber}`);
 
+  // * Send signal to connect tints from picker
+  postMessage({
+    type: 'pick-tints',
+    data: {
+      hex: colorPicker.value,
+      picker: colorNumber,
+      name: colorName.value,
+    },
+  });
+
+  // * Add event listener to connect tints from picker
   colorPicker.addEventListener('input', () => {
     colorLabel.textContent = colorPicker.value;
-    //console.log(colorName.value);
     postMessage({
       type: 'pick-tints',
       data: {
