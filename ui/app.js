@@ -38,7 +38,18 @@ onmessage = (event) => {
 
       colorPicker.addEventListener(
         'change',
-        fetchColor(colorPicker, colorName),
+        fetchColor(colorPicker, (name) => {
+          colorName.value = name;
+          colorName.disabled = false;
+
+          postMessage({
+            type: 'color-name',
+            data: {
+              picker: item,
+              name: name,
+            },
+          });
+        }),
       );
 
       colorName.disabled = true;
@@ -66,17 +77,15 @@ onmessage = (event) => {
 document.getElementById('add-colors').onclick = () => {
   postMessage({
     type: 'add-color',
+    //data{
+    //  name:
+    //}
   });
 };
 
 document.getElementById('button-apply').onclick = () => {
   postMessage({
-    type: 'create-circles',
-    color: {
-      rgb: colorRgb.textContent,
-      hex: colorHex.textContent,
-      colorTitle: colorName.value,
-    },
+    type: 'apply-styles',
   });
 };
 
@@ -159,6 +168,14 @@ function addColor(color) {
     .then((response) => response.json())
     .then((response) => {
       colorNameInput.value = response.name.value;
+
+      postMessage({
+        type: 'color-name',
+        data: {
+          picker: colorNumber,
+          name: response.name.value,
+        },
+      });
     });
 
   const colorNameInputContainer = createElement(
@@ -220,20 +237,26 @@ function addColor(color) {
   colorItem.append(colorForm, colorContainer);
   colorsContainer.appendChild(colorItem);
 
-  // * Send signal to connect tints from picker
-  const colorPicker = document.getElementById(`color-input-${colorNumber}`);
-
   if (colorNumber > 1) {
     document.getElementById(`remove-button-${colorNumber}`).onclick = () => {
       document.getElementById(`picker-container-${colorNumber}`).remove();
     };
   }
+  // * Send signal to connect tints from picker
+  const colorPicker = document.getElementById(`color-input-${colorNumber}`);
+
+  const colorName = document.getElementById(`colorName-${colorNumber}`);
 
   colorPicker.addEventListener('input', () => {
     colorLabel.textContent = colorPicker.value;
+    //console.log(colorName.value);
     postMessage({
       type: 'pick-tints',
-      data: { hex: colorPicker.value, picker: colorNumber },
+      data: {
+        hex: colorPicker.value,
+        picker: colorNumber,
+        name: colorName.value,
+      },
     });
   });
 }
@@ -256,7 +279,7 @@ const debounce = (func, wait, immediate) => {
   };
 };
 
-const fetchColor = (colorPicker, colorNameElement) =>
+const fetchColor = (colorPicker, callback) =>
   debounce(() => {
     const hex = colorPicker.value.replace('#', '');
     fetch(`https://www.thecolorapi.com/id?hex=${hex}&format=json`, {
@@ -264,8 +287,9 @@ const fetchColor = (colorPicker, colorNameElement) =>
     })
       .then((response) => response.json())
       .then((response) => {
-        colorNameElement.value = response.name.value;
-        console.log(response.name.value);
-        colorNameElement.disabled = false;
+        callback(response.name.value);
+        //colorNameElement.value = response.name.value;
+        //console.log(response.name.value);
+        //colorNameElement.disabled = false;
       });
   }, 500);

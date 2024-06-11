@@ -1,29 +1,58 @@
 import { getContrastRatios } from './contrast';
-import { rgbToHex, rgbFormat } from './convert';
-import { generateTint } from './tint';
+import { ColorEntity } from './tint';
 
-export function insertTints({
-  rgb,
-  colorTitle,
-  shouldCreateStyle,
-}: Record<string, string>) {
+type IInsertTint = {
+  color: ColorEntity.Color;
+  withStyle?: boolean;
+};
+
+export function insertColors(colors: Map<number, ColorEntity.Color>) {
   const mainFrame = figma.createFrame();
-
-  const frameTitle = figma.createText();
-  frameTitle.fontSize = 24;
-  frameTitle.characters = colorTitle;
-
-  mainFrame.x = 0;
-  mainFrame.itemSpacing = 15;
-  mainFrame.layoutMode = 'VERTICAL';
+  mainFrame.layoutMode = 'HORIZONTAL';
   mainFrame.layoutSizingVertical = 'HUG';
   mainFrame.layoutSizingHorizontal = 'HUG';
   mainFrame.verticalPadding = 30;
   mainFrame.horizontalPadding = 30;
 
-  mainFrame.appendChild(frameTitle);
+  figma.currentPage.appendChild(mainFrame);
 
-  for (let i = -7, j = 0; i < 3; i++, j = i + 7) {
+  colors.forEach((color: ColorEntity.Color) => {
+    const colorFrame = insertTints({ color });
+
+    mainFrame.appendChild(colorFrame);
+  });
+
+  const selectFrame: FrameNode[] = [];
+
+  selectFrame.push(mainFrame);
+
+  figma.currentPage.selection = selectFrame;
+  figma.viewport.scrollAndZoomIntoView(selectFrame);
+}
+
+export function insertTints({ color, withStyle = false }: IInsertTint) {
+  const colorName = color.name || 'Unnamed';
+  const colorFrame = figma.createFrame();
+
+  const frameTitle = figma.createText();
+  frameTitle.fontSize = 24;
+  frameTitle.characters = colorName;
+
+  colorFrame.x = 0;
+  colorFrame.itemSpacing = 15;
+  colorFrame.layoutMode = 'VERTICAL';
+  colorFrame.layoutSizingVertical = 'HUG';
+  colorFrame.layoutSizingHorizontal = 'HUG';
+  colorFrame.verticalPadding = 30;
+  colorFrame.horizontalPadding = 30;
+
+  colorFrame.appendChild(frameTitle);
+
+  // * Get tints
+  color.tints.forEach((tintHex, j) => {
+    const rgb = new ColorEntity.RGB().fromHEX(tintHex.value!);
+    const { r, g, b } = rgb.clamped();
+
     const mainTintFrame = figma.createFrame();
     mainTintFrame.layoutMode = 'HORIZONTAL';
     mainTintFrame.itemSpacing = 5;
@@ -37,14 +66,11 @@ export function insertTints({
     tintFrame.horizontalPadding = 5;
     tintFrame.cornerRadius = 10;
 
-    // * Create tints
-    const { r: _r, g: _g, b: _b } = generateTint(rgb, i);
-
     // * Apply the lightness tint
-    tintFrame.fills = [{ type: 'SOLID', color: { r: _r, g: _g, b: _b } }];
+    tintFrame.fills = [{ type: 'SOLID', color: { r, g, b } }];
 
     // * Add contrast
-    const { black, white } = getContrastRatios(_r, _g, _b);
+    const { black, white } = getContrastRatios(r, g, b);
     const { blackContrastFrame, whiteContrastFrame } = createContrastFrame(
       black,
       white,
@@ -52,9 +78,9 @@ export function insertTints({
 
     // * Create tint information frame
     const tintInfoFrame = createTintInfoFrame(
-      `${colorTitle.toLowerCase()} - ${j * 100}`,
-      rgbToHex(_r, _g, _b),
-      rgbFormat(_r, _g, _b),
+      `${colorName.toLowerCase()} - ${(j + 1) * 100}`,
+      tintHex.value!,
+      rgb.toString(),
     );
 
     tintFrame.appendChild(blackContrastFrame);
@@ -64,38 +90,31 @@ export function insertTints({
     tintFrame.layoutSizingVertical = 'FILL';
 
     mainTintFrame.appendChild(tintInfoFrame);
-    mainFrame.appendChild(mainTintFrame);
+    colorFrame.appendChild(mainTintFrame);
 
     mainTintFrame.layoutSizingHorizontal = 'FILL';
 
-    if (shouldCreateStyle) {
+    if (withStyle) {
       try {
         const style = figma.createPaintStyle();
-        style.name = `${colorTitle}/${colorTitle.toLowerCase()}-${j * 100}`;
+        style.name = `${colorName}/${colorName.toLowerCase()}-${j * 100}`;
         style.paints = [
           {
             type: 'SOLID',
-            color: { r: _r, g: _g, b: _b },
+            color: { r: r, g: g, b: b },
             opacity: 1,
           },
         ];
       } catch (error) {
         console.error(
-          `Error creating style for ${colorTitle} - ${j * 100}:`,
+          `Error creating style for ${colorName}-${j * 100}:`,
           error,
         );
       }
     }
+  });
 
-    figma.currentPage.appendChild(mainFrame);
-  }
-
-  const selectFrame: FrameNode[] = [];
-
-  selectFrame.push(mainFrame);
-
-  figma.currentPage.selection = selectFrame;
-  figma.viewport.scrollAndZoomIntoView(selectFrame);
+  return colorFrame;
 }
 
 export function createTintInfoFrame(
@@ -121,8 +140,8 @@ export function createTintInfoFrame(
   textColorBase.fills = [{ type: 'SOLID', color: { r: 0.6, g: 0.6, b: 0.56 } }];
   textColorBase.fontSize = 10;
 
-  const textHextValue = textColorBase.clone();
-  textHextValue.characters = rgb;
+  const textHexValue = textColorBase.clone();
+  textHexValue.characters = rgb;
 
   const textRgbValue = textColorBase.clone();
   textRgbValue.characters = hex;
@@ -130,7 +149,7 @@ export function createTintInfoFrame(
   textColorBase.remove();
 
   baseFrame.appendChild(textTintLevel);
-  baseFrame.appendChild(textHextValue);
+  baseFrame.appendChild(textHexValue);
   baseFrame.appendChild(textRgbValue);
 
   return baseFrame;

@@ -1,8 +1,8 @@
-import { hslToRgb, rgbToHex, rgbToHls, rgbToObject, hexToRgb } from './convert';
+import { hexToRgb, hslToRgb, rgbToHex, rgbToHls, rgbToObject } from './convert';
 
 export namespace ColorEntity {
   export interface ColorValidator {
-    isAcceptable(value: string | number): boolean;
+    isAcceptable(value: string): boolean;
     toString(value: string): string;
   }
 
@@ -17,6 +17,8 @@ export namespace ColorEntity {
   }
 
   type IColor = {
+    name: string;
+    rgb?: RGB;
     hex?: HEX;
     hsl?: HSL;
     stepLightness?: number;
@@ -25,28 +27,62 @@ export namespace ColorEntity {
   };
 
   export class Color {
+    private stepLightness: number;
+    private defaultLevel: number;
+    private amount: number;
+
+    base: string;
+    name?: string;
     hex: HEX;
     hsl: HSL;
-    rgb?: RGB;
-    stepLightness: number;
-    defaultLevel: number;
-    amount: number;
+    rgb: RGB;
+
     tints: HEX[];
 
     constructor(base: string, obj?: IColor) {
-      this.hex = new HEX(base ?? '#505050');
-      this.hsl = obj?.hsl ?? HSL.fromHEX(this.hex.value ?? '#505050');
-      //this.rgb = new RGB();
+      this.base = base;
+      this.name = obj?.name;
+      this.hex = new HEX();
+      this.hsl = new HSL();
+      //this.hsl = obj?.hsl ?? HSL.fromHEX(this.hex.value ?? '#505050');
+      this.rgb = new RGB();
+
       this.stepLightness = obj?.stepLightness ?? 0.5 / 11;
       this.defaultLevel = obj?.defaultLevel ?? 7;
       this.amount = obj?.amount ?? 11;
       this.tints = [];
+      this.init();
       this.generateTints();
     }
 
-    generateTints(hex?: HEX) {
+    private init() {
+      if (this.hex.isAcceptable(this.base)) {
+        this.hex.set(this.base);
+        this.rgb = this.rgb.fromHEX(this.base);
+        this.hsl = this.hsl.fromHEX(this.base);
+      }
+
+      if (this.rgb.isAcceptable(this.base)) {
+        this.rgb.set(this.base);
+        this.hex = this.hex.fromRgb(this.base);
+        this.hsl = this.hsl.fromHEX(this.base);
+      }
+
+      if (this.hsl.isAcceptable(this.base)) {
+        this.hsl.set(this.base);
+        this.hex = this.hex.fromHsl(this.base);
+        this.rgb = this.rgb.fromHsl(this.base);
+      }
+    }
+
+    setName(name: string) {
+      this.name = name;
+    }
+
+    private generateTints(hex?: HEX) {
       const hsl = this.hsl;
 
+      //debugger;
       // * Set tints
       for (
         let level = -this.defaultLevel + 1, j = 1;
@@ -57,16 +93,16 @@ export namespace ColorEntity {
         lightness = Math.max(0, Math.min(1, lightness));
 
         this.tints.push(
-          HEX.fromHsl(new HSL({ h: hsl.h, s: hsl.s, l: lightness })),
+          new HEX().fromHsl({ h: hsl.h, s: hsl.s, l: lightness }),
         );
       }
     }
   }
 
   interface IRGB {
-    r?: number;
-    g?: number;
-    b?: number;
+    r: number;
+    g: number;
+    b: number;
     min?: number;
     max?: number;
   }
@@ -87,6 +123,16 @@ export namespace ColorEntity {
       return objRGBRegexp.test(value);
     }
 
+    set(value: string | IRGB) {
+      if (typeof value === 'string') {
+        value = this.fromString(value);
+      }
+
+      this.r = value.r;
+      this.g = value.g;
+      this.b = value.b;
+    }
+
     toString(): string {
       return `rgb(${this.r},${this.g},${this.b})`;
     }
@@ -94,15 +140,79 @@ export namespace ColorEntity {
     toObject(): { r: number; g: number; b: number } {
       return { r: this.r, g: this.g, b: this.b };
     }
+    private clamp(v: number) {
+      return Math.round(v);
+    }
 
-    getTints() {
-      return this.tints;
+    clamped() {
+      return {
+        r: this.r / 255,
+        g: this.g / 255,
+        b: this.b / 255,
+      };
+    }
+
+    fromString(value: string) {
+      const arr = value
+        .slice(4, -1)
+        .split(',')
+        .map((r) => Number(r));
+      const r = this.clamp(arr[0]);
+      const g = this.clamp(arr[1]);
+      const b = this.clamp(arr[2]);
+
+      //if (noClamp) {
+      //  return { r, g, b };
+      //}
+
+      return new RGB({ r, g, b });
+    }
+
+    fromHsl(value: string | IHSL): RGB {
+      if (typeof value === 'string') {
+        const hsl = new HSL();
+        value = hsl.fromString(value);
+      }
+
+      const { h, s, l } = value;
+
+      let r: number, g: number, b: number;
+
+      if (s === 0) {
+        r = g = b = l; // achromatic
+      } else {
+        const hue2rgb = (p: number, q: number, t: number): number => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1 / 6) return p + (q - p) * 6 * t;
+          if (t < 1 / 2) return q;
+          if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+          return p;
+        };
+
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+
+        r = hue2rgb(p, q, h + 1 / 3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1 / 3);
+      }
+
+      return new RGB({ r, g, b });
+    }
+
+    fromHEX(value: string): RGB {
+      const bigint = parseInt(value.slice(1), 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return new RGB({ r, g, b });
     }
   }
   interface IHSL {
-    h?: number;
-    s?: number;
-    l?: number;
+    h: number;
+    s: number;
+    l: number;
     satBound?: number[];
     lumBound?: number[];
   }
@@ -120,6 +230,16 @@ export namespace ColorEntity {
         obj?.l ?? getRandom(obj?.lumBound?.[0] ?? 50, obj?.lumBound?.[1] ?? 50);
     }
 
+    set(value: string | IHSL) {
+      if (typeof value === 'string') {
+        value = this.fromString(value);
+      }
+
+      this.h = value.h;
+      this.s = value.s;
+      this.l = value.l;
+    }
+
     isAcceptable(value: string): boolean {
       return objHSLRegexp.test(value);
     }
@@ -132,7 +252,19 @@ export namespace ColorEntity {
       return { h: this.h, s: this.s, l: this.l };
     }
 
-    static fromHEX(hex: string): HSL {
+    fromString(value: string): HSL {
+      const arr = value
+        .slice(4, -1)
+        .split(',')
+        .map((r) => Number(r));
+      const h = Math.round(arr[0]);
+      const s = Math.round(arr[1]);
+      const l = Math.round(arr[2]);
+
+      return new HSL({ h, s, l });
+    }
+
+    fromHEX(hex: string): HSL {
       const { r, g, b } = rgbToObject(hexToRgb(hex));
       const { h, s, l } = rgbToHls(r, g, b);
 
@@ -147,15 +279,40 @@ export namespace ColorEntity {
       this.value = value;
     }
 
+    set(value: string) {
+      this.value = value;
+    }
+
     isAcceptable(value: string): boolean {
       return objHEXRegexp.test(value);
     }
 
-    static fromHsl(hsl: HSL): HEX {
-      const { r: _r, g: _g, b: _b } = hslToRgb(hsl.h, hsl.s, hsl.l);
+    fromRgb(value: string | IRGB): HEX {
+      if (typeof value === 'string') {
+        const rgb = new RGB();
+        value = rgb.fromString(value);
+      }
 
-      // * Return the lightness tint
-      return new HEX(rgbToHex(_r, _g, _b));
+      return new HEX(
+        `#${(
+          (1 << 24) +
+          (Math.round(value.r * 255) << 16) +
+          (Math.round(value.g * 255) << 8) +
+          Math.round(value.b * 255)
+        )
+          .toString(16)
+          .slice(1)}`,
+      );
+    }
+
+    fromHsl(value: string | IHSL): HEX {
+      if (typeof value === 'string') {
+        const hsl = new HSL();
+        value = hsl.fromString(value);
+      }
+      const { r, g, b } = hslToRgb(value.h, value.s, value.l);
+
+      return new HEX(rgbToHex(r, g, b));
     }
   }
 }
@@ -179,4 +336,3 @@ export function generateTint(
   // * Return the lightness tint
   return hslToRgb(h, lightness, s);
 }
-
