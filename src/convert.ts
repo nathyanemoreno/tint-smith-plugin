@@ -15,6 +15,22 @@ export function rgbToHex(r: number, g: number, b: number): string {
     .slice(1)}`;
 }
 
+export function rgbToObject(rgb: string, noClamp: boolean = false) {
+  const arr = rgb
+    .slice(4, -1)
+    .split(',')
+    .map((r) => Number(r));
+  const r = Math.round(arr[0]);
+  const g = Math.round(arr[1]);
+  const b = Math.round(arr[2]);
+
+  if (noClamp) {
+    return { r, g, b };
+  }
+
+  return { r: r / 255, g: g / 255, b: b / 255 };
+}
+
 export function rgbToHls(r: number, g: number, b: number) {
   const maxc = Math.max(r, g, b);
   const minc = Math.min(r, g, b);
@@ -46,7 +62,7 @@ export function rgbToHls(r: number, g: number, b: number) {
   return { h, l, s };
 }
 
-export function hlsToRgb(h: number, l: number, s: number) {
+export function hslToRgb(h: number, s: number, l: number) {
   let r: number, g: number, b: number;
 
   if (s === 0) {
@@ -70,6 +86,14 @@ export function hlsToRgb(h: number, l: number, s: number) {
   }
 
   return { r, g, b };
+}
+
+export function hexToRgb(hex: string) {
+  const bigint = parseInt(hex.slice(1), 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 export function _v(m1: number, m2: number, hue: number) {
