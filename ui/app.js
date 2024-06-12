@@ -77,15 +77,19 @@ onmessage = (event) => {
 document.getElementById('add-colors').onclick = () => {
   postMessage({
     type: 'add-color',
-    //data{
-    //  name:
-    //}
   });
 };
 
 document.getElementById('button-apply').onclick = () => {
+  const withContrast = document.getElementById('with_contrast').checked;
+  const withStyle = document.getElementById('with_style').checked;
+
   postMessage({
     type: 'apply-styles',
+    data: {
+      withContrast,
+      withStyle,
+    },
   });
 };
 

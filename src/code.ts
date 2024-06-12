@@ -1,13 +1,11 @@
 import { ColorEntity } from './tint';
 import { insertColors, insertTints } from './ui';
 
-// This shows the HTML page in "ui.html".
-
 figma.showUI(__uiFiles__.main);
 
-figma.ui.resize(1100, 500);
+figma.ui.resize(820, 500);
 
-const color = new ColorEntity.Color('#202020');
+const color = new ColorEntity.Color('#2DCCC2');
 
 // * Start with a color on the UI
 figma.ui.postMessage(
@@ -25,6 +23,8 @@ type Message = {
   hex: string;
   picker: number;
   name: string;
+  withContrast?: boolean;
+  withStyle?: boolean;
 };
 
 figma.ui.onmessage = (msg: { type: string; data: Message }) => {
@@ -36,9 +36,7 @@ figma.ui.onmessage = (msg: { type: string; data: Message }) => {
 
     switch (msg.type) {
       case 'add-color':
-        const color = new ColorEntity.Color('#1e1e1e');
-        //color.name = msg.data?.name;
-        //colors.set(msg.data.picker, color);
+        const color = new ColorEntity.Color('#2DCCC2');
 
         figma.ui.postMessage(
           JSON.stringify({
@@ -62,7 +60,6 @@ figma.ui.onmessage = (msg: { type: string; data: Message }) => {
         break;
 
       case 'pick-tints':
-        //console.log(colors);
         const newColor = new ColorEntity.Color(msg.data?.hex);
         newColor.setName(msg.data?.name);
 
@@ -77,7 +74,12 @@ figma.ui.onmessage = (msg: { type: string; data: Message }) => {
         );
         break;
       case 'apply-styles':
-        insertColors(colors);
+        const { withContrast, withStyle } = msg.data;
+
+        insertColors(colors, {
+          withStyle,
+          withContrast,
+        });
         figma.closePlugin();
         break;
       default:

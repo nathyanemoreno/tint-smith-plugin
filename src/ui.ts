@@ -1,12 +1,21 @@
 import { getContrastRatios } from './contrast';
 import { ColorEntity } from './tint';
 
-type IInsertTint = {
-  color: ColorEntity.Color;
+type IInsertColorsParams = {
   withStyle?: boolean;
+  withContrast?: boolean;
 };
 
-export function insertColors(colors: Map<number, ColorEntity.Color>) {
+type IInsertTintParams = {
+  color: ColorEntity.Color;
+  withStyle?: boolean;
+  withContrast?: boolean;
+};
+
+export function insertColors(
+  colors: Map<number, ColorEntity.Color>,
+  options: IInsertColorsParams,
+) {
   const mainFrame = figma.createFrame();
   mainFrame.layoutMode = 'HORIZONTAL';
   mainFrame.layoutSizingVertical = 'HUG';
@@ -17,7 +26,7 @@ export function insertColors(colors: Map<number, ColorEntity.Color>) {
   figma.currentPage.appendChild(mainFrame);
 
   colors.forEach((color: ColorEntity.Color) => {
-    const colorFrame = insertTints({ color });
+    const colorFrame = insertTints({ color, ...options });
 
     mainFrame.appendChild(colorFrame);
   });
@@ -30,7 +39,11 @@ export function insertColors(colors: Map<number, ColorEntity.Color>) {
   figma.viewport.scrollAndZoomIntoView(selectFrame);
 }
 
-export function insertTints({ color, withStyle = false }: IInsertTint) {
+export function insertTints({
+  color,
+  withStyle = false,
+  withContrast = true,
+}: IInsertTintParams) {
   const colorName = color.name || 'Unnamed';
   const colorFrame = figma.createFrame();
 
@@ -69,12 +82,17 @@ export function insertTints({ color, withStyle = false }: IInsertTint) {
     // * Apply the lightness tint
     tintFrame.fills = [{ type: 'SOLID', color: { r, g, b } }];
 
-    // * Add contrast
-    const { black, white } = getContrastRatios(r, g, b);
-    const { blackContrastFrame, whiteContrastFrame } = createContrastFrame(
-      black,
-      white,
-    );
+    if (withContrast) {
+      // * Add contrast
+      const { black, white } = getContrastRatios(r, g, b);
+      const { blackContrastFrame, whiteContrastFrame } = createContrastFrame(
+        black,
+        white,
+      );
+
+      tintFrame.appendChild(blackContrastFrame);
+      tintFrame.appendChild(whiteContrastFrame);
+    }
 
     // * Create tint information frame
     const tintInfoFrame = createTintInfoFrame(
@@ -83,8 +101,6 @@ export function insertTints({ color, withStyle = false }: IInsertTint) {
       rgb.toString(),
     );
 
-    tintFrame.appendChild(blackContrastFrame);
-    tintFrame.appendChild(whiteContrastFrame);
     mainTintFrame.appendChild(tintFrame);
 
     tintFrame.layoutSizingVertical = 'FILL';

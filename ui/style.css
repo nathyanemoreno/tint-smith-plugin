@@ -1,26 +1,61 @@
-body {
-  padding: 2em;
-}
-
-div {
-  margin: 0.5em;
-}
 input {
   display: block;
 }
 
+#bottom-bar {
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  display: flex;
+  background-color: #ddd;
+  padding-right: 1em;
+  padding-left: 1em;
+  border-radius: 1em;
+  margin-top: 0.5em;
+}
+
+#plugin-options {
+  flex: 1;
+  padding: 0.5em;
+}
+
 #button-apply {
-  position: fixed;
-  bottom: 2em;
-  right: 2em;
+  position: relative;
+  justify-self: center;
+  align-self: center;
   z-index: 999;
+}
+
+#colors-list {
+  overflow-y: overlay;
+  flex: 1;
+}
+
+.container {
+  padding: 1em;
+  max-height: fit-content;
+  min-height: 500px;
+}
+
+.content {
+  display: flex;
+  height: 420px;
+  width: 100%;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  justify-content: space-between;
+  flex: 1;
 }
 
 .row {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
 }
 
 .gap-5 {
@@ -112,6 +147,7 @@ input {
 
 .list {
   padding-inline-start: 10px;
+  gap: 20px;
 }
 
 .list-item {

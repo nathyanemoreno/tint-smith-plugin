@@ -1,57 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TintSmith</title>
-    <script type="module" src="app.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/thomas-lowry/figma-plugin-ds/dist/figma-plugin-ds.css"
-    />
-    <link rel="stylesheet" href="style.css">
-  </head>
+<title>TintSmith</title>
+<script type="module" src="app.js"></script>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/thomas-lowry/figma-plugin-ds/dist/figma-plugin-ds.css"
+/>
+<link rel="stylesheet" href="style.css" />
 
+<div class="container">
   <!--* Logo-->
   <img src="../assets/tint-smith-logo.svg" alt="" />
 
-  <div class="row">
-    <div class="column">
-      <!--*List-->
-      <ul id="colors" class="list"></ul>
+  <div class="content">
+    <div class="box">
+      <div id="colors-list">
+        <!--*List-->
+        <ul id="colors" class="list column"></ul>
 
-      <!-- * Add color -->
-      <div class="column">
-        <button
-          id="add-colors"
-          class="button button--secondary align-self-center"
-        >
-          <i class="icon icon--plus"></i>
-          Add color
+        <!-- * Add color -->
+        <div class="column">
+          <button
+            id="add-colors"
+            class="button button--secondary align-self-center"
+          >
+            <i class="icon icon--plus"></i>
+            Add color
+          </button>
+        </div>
+      </div>
+
+      <!--* Options-->
+      <div id="bottom-bar" class="row">
+        <div id="plugin-options" class="row">
+          <div class="checkbox">
+            <input id="with_contrast" type="checkbox" class="checkbox__box" />
+            <label for="with_contrast" class="checkbox__label"
+              >Include contrast values</label
+            >
+          </div>
+
+          <div class="checkbox">
+            <input
+              id="with_style"
+              type="checkbox"
+              class="checkbox__box"
+            />
+            <label for="with_style" class="checkbox__label"
+              >Generate style</label
+            >
+          </div>
+        </div>
+
+        <button id="button-apply" class="button button--primary">
+          Apply styles
         </button>
       </div>
     </div>
-
-    <!--* Options-->
-    <div class="column">
-      <!--<button class="button button--tertiary">Label</button>-->
-
-      <div class="checkbox">
-        <input id="include_constrast" type="checkbox" class="checkbox__box" />
-        <label for="include_constrast" class="checkbox__label"
-          >Include constrast values</label
-        >
-      </div>
-
-      <button id="button-apply" class="button button--primary">
-        Apply styles
-      </button>
-    </div>
   </div>
-
-  <select id="uniqueId" class="select-menu">
-    <option>Please make a selection</option>
-    <option value="2">Item 2</option>
-    <option value="3">Item 3</option>
-  </select>
-</html>
+</div>
