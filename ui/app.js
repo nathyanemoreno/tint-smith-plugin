@@ -13,14 +13,6 @@ function postMessage(message) {
   );
 }
 
-const hexToRgb = (hex) => {
-  const bigint = parseInt(hex.slice(1), 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-  return `rgb(${r}, ${g}, ${b})`;
-};
-
 onmessage = (event) => {
   const message = JSON.parse(event.data.pluginMessage);
   let color = message.data.color;
@@ -35,6 +27,8 @@ onmessage = (event) => {
     case 'pick-tints':
       const colorPicker = document.getElementById(`color-input-${item}`);
       const colorName = document.getElementById(`colorName-${item}`);
+
+      colorName.disabled = true;
 
       colorPicker.addEventListener(
         'change',
@@ -52,7 +46,7 @@ onmessage = (event) => {
         }),
       );
 
-      colorName.disabled = true;
+      colorName.disabled = false;
 
       color.tints.forEach((tintHex, j) => {
         const picker = document.querySelector(
@@ -300,8 +294,5 @@ const fetchColor = (colorPicker, callback) =>
       .then((response) => response.json())
       .then((response) => {
         callback(response.name.value);
-        //colorNameElement.value = response.name.value;
-        //console.log(response.name.value);
-        //colorNameElement.disabled = false;
       });
   }, 500);
