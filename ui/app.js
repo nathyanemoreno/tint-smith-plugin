@@ -21,6 +21,12 @@ onmessage = (event) => {
   switch (message.type) {
     case 'add-color':
       addColor(color);
+      document
+        .getElementById('colors-list')
+        .scrollTo(0, document.body.scrollHeight);
+
+      // ! TODO: fix remove color with same id
+      resetRemoveButtons();
 
       break;
 
@@ -34,7 +40,6 @@ onmessage = (event) => {
         'change',
         fetchColor(colorPicker, (name) => {
           colorName.value = name;
-          colorName.disabled = false;
 
           postMessage({
             type: 'color-name',
@@ -87,12 +92,25 @@ document.getElementById('button-apply').onclick = () => {
   });
 };
 
+function resetRemoveButtons() {
+  const colorsContainer = document.getElementById('colors');
+  const disabled =
+    colorsContainer.querySelectorAll('[itemprop=picker]').length <= 1;
+
+  const colorButton = document.querySelector(`.icon-button`);
+
+  log(disabled, colorButton);
+  colorButton.disabled = disabled;
+
+  const colorIcon = document.querySelector(`.icon-button i`);
+  colorIcon.className = `icon icon--trash ${disabled ? 'icon--disabled' : ''}`;
+}
+
 function addColor(color) {
   const hex = color.hex.value;
   const colorsContainer = document.getElementById('colors');
   const colorNumber =
     colorsContainer.querySelectorAll('[itemprop=picker]').length + 1 || 1;
-  log('test: ' + colorNumber);
 
   const createElement = (tag, attributes = {}, ...children) => {
     const element = document.createElement(tag);
@@ -184,8 +202,10 @@ function addColor(color) {
   const colorButton = createElement('button', {
     id: `remove-button-${colorNumber}`,
     className: 'icon-button',
-    disabled: colorNumber < 1,
   });
+
+  colorButton.disabled = colorNumber <= 1;
+
   const colorIcon = createElement('i', {
     className: `icon icon--trash ${colorNumber === 1 ? 'icon--disabled' : ''}`,
   });
@@ -235,11 +255,6 @@ function addColor(color) {
   colorItem.append(colorForm, colorContainer);
   colorsContainer.appendChild(colorItem);
 
-  if (colorNumber > 1) {
-    document.getElementById(`remove-button-${colorNumber}`).onclick = () => {
-      document.getElementById(`picker-container-${colorNumber}`).remove();
-    };
-  }
   const colorPicker = document.getElementById(`color-input-${colorNumber}`);
   const colorName = document.getElementById(`colorName-${colorNumber}`);
 
@@ -265,6 +280,13 @@ function addColor(color) {
       },
     });
   });
+
+  document.getElementById(`remove-button-${colorNumber}`).onclick = () => {
+    log(`${colorNumber}`);
+    document.getElementById(`picker-container-${colorNumber}`).remove();
+
+    resetRemoveButtons();
+  };
 }
 
 const debounce = (func, wait, immediate) => {
