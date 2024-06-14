@@ -8,7 +8,7 @@ const uid = new ShortUniqueId({ length: 4 });
 
 figma.showUI(__uiFiles__.main);
 
-figma.ui.resize(820, 500);
+figma.ui.resize(860, 500);
 
 // * Initialize list of colors
 const colors: ColorMap = new Map();
