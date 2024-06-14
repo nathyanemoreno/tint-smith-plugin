@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "concurrently": "^8.2.2",
+    "short-unique-id": "^5.2.0",
     "ts-loader": "^9.5.1",
     "vite": "^5.2.13",
     "vite-plugin-singlefile": "^2.0.1",
