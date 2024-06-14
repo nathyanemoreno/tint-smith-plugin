@@ -181,7 +181,7 @@ function addColor(colorId, color) {
       postMessage({
         type: 'color-name',
         data: {
-          picker: colorId,
+          colorId: colorId,
           name: response.name.value,
         },
       });
