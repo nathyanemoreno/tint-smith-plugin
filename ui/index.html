@@ -32,7 +32,12 @@
       <div id="bottom-bar" class="row">
         <div id="plugin-options" class="row">
           <div class="checkbox">
-            <input id="with_contrast" type="checkbox" class="checkbox__box" />
+            <input
+              id="with_contrast"
+              type="checkbox"
+              class="checkbox__box"
+              checked
+            />
             <label for="with_contrast" class="checkbox__label"
               >Include contrast values</label
             >
@@ -43,9 +48,22 @@
               id="with_style"
               type="checkbox"
               class="checkbox__box"
+              checked
             />
             <label for="with_style" class="checkbox__label"
               >Generate local styles</label
+            >
+          </div>
+
+          <div class="checkbox">
+            <input
+              id="auto_generate_name"
+              type="checkbox"
+              class="checkbox__box"
+              checked
+            />
+            <label for="auto_generate_name" class="checkbox__label"
+              >Auto generate name</label
             >
           </div>
         </div>

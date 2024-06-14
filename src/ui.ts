@@ -12,10 +12,7 @@ type IInsertTintParams = {
   withContrast?: boolean;
 };
 
-export function insertColors(
-  colors: ColorMap,
-  options: IInsertColorsParams,
-) {
+export function insertColors(colors: ColorMap, options: IInsertColorsParams) {
   const mainFrame = figma.createFrame();
   mainFrame.layoutMode = 'HORIZONTAL';
   mainFrame.layoutSizingVertical = 'HUG';
@@ -113,7 +110,7 @@ export function insertTints({
     if (withStyle) {
       try {
         const style = figma.createPaintStyle();
-        style.name = `${colorName}/${colorName.toLowerCase()}-${j * 100}`;
+        style.name = `${colorName}/${colorName.toLowerCase()}-${(j + 1) * 100}`;
         style.paints = [
           {
             type: 'SOLID',
