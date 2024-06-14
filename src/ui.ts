@@ -1,5 +1,5 @@
 import { getContrastRatios } from './contrast';
-import { ColorEntity } from './tint';
+import { ColorEntity, ColorMap } from './tint';
 
 type IInsertColorsParams = {
   withStyle?: boolean;
@@ -13,7 +13,7 @@ type IInsertTintParams = {
 };
 
 export function insertColors(
-  colors: Map<number, ColorEntity.Color>,
+  colors: ColorMap,
   options: IInsertColorsParams,
 ) {
   const mainFrame = figma.createFrame();

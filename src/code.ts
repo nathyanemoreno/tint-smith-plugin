@@ -1,11 +1,12 @@
-import { ColorEntity } from './tint';
-import { insertColors, insertTints } from './ui';
+import { ColorEntity, ColorMap } from './tint';
+import { insertColors } from './ui';
 
 figma.showUI(__uiFiles__.main);
 
 figma.ui.resize(820, 500);
 
-const color = new ColorEntity.Color('#2DCCC2');
+// * Initialize list of colors
+const colors: ColorMap = new Map();
 
 // * Start with a color on the UI
 figma.ui.postMessage(
