@@ -36,11 +36,15 @@ onmessage = (event) => {
 
       colorName.disabled = true;
 
-      if (isGenerateNameEnabled) {
+      if (isGenerateNameEnabled && color.name == null) {
         colorPicker.addEventListener(
           'change',
           fetchColor(colorPicker, (name) => {
             colorName.value = name;
+
+            const colorLoader = document.getElementById(`color-loader-${id}`);
+            colorLoader.className =
+              name == '' ? 'icon icon--spinner icon--spin' : '';
 
             postMessage({
               type: 'color-name',
@@ -52,6 +56,8 @@ onmessage = (event) => {
           }),
         );
       }
+
+      colorName.value = color.name || '';
 
       colorName.disabled = false;
 
@@ -178,13 +184,16 @@ function addColor(colorId, color) {
     placeholder: 'name',
   });
 
-  if (isGenerateNameEnabled) {
+  if (isGenerateNameEnabled && color.name == null) {
     fetch(
       `https://www.thecolorapi.com/id?hex=${hex.replace('#', '')}&format=json`,
     )
       .then((response) => response.json())
       .then((response) => {
         colorNameInput.value = response.name.value;
+
+        const loader = document.getElementById(`color-loader-${colorId}`);
+        loader.className = '';
 
         postMessage({
           type: 'color-name',
@@ -212,12 +221,19 @@ function addColor(colorId, color) {
     className: `icon icon--trash ${colorId === 1 ? 'icon--disabled' : ''}`,
   });
 
+  const colorLoader = createElement('div', {
+    id: `color-loader-${colorId}`,
+    className: !color.name ? 'icon icon--spinner icon--spin' : '',
+  });
+
+  colorNameInput.appendChild(colorLoader);
   colorButton.appendChild(colorIcon);
   const colorNameContainer = createElement(
     'div',
     { id: 'color-name-container', className: 'row' },
     colorNameInputContainer,
     colorButton,
+    colorLoader,
   );
 
   const tintList = createElement('ul', { className: 'list row' });
@@ -265,7 +281,7 @@ function addColor(colorId, color) {
       type: 'color-name',
       data: {
         colorId: colorId,
-        name: colorName.value,
+        name: colorName.value || color.name,
       },
     });
   });
@@ -276,7 +292,7 @@ function addColor(colorId, color) {
     data: {
       colorId: colorId,
       hex: colorPicker.value,
-      name: colorName.value,
+      name: colorName.value || color.name,
     },
   });
 

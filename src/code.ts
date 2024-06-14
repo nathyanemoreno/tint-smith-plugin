@@ -16,7 +16,9 @@ const colors: ColorMap = new Map();
 // * Start with a color on the UI
 const color = new ColorEntity.Color('#2DCCC2');
 const id = uid.rnd();
+color.name = 'Turquoise'
 colors.set(id, color);
+
 postMessage({ type: 'add-color', data: { id, color } });
 
 figma.ui.onmessage = (msg: { type: string; data: Message }) => {
@@ -28,7 +30,7 @@ figma.ui.onmessage = (msg: { type: string; data: Message }) => {
       case 'add-color':
         const id = uid.rnd();
 
-        const color = new ColorEntity.Color('#2DCCC2');
+        const color = new ColorEntity.Color();
 
         postMessage({
           type: 'add-color',

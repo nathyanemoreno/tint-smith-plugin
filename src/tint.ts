@@ -39,7 +39,7 @@ export namespace ColorEntity {
     private defaultLevel: number;
     private amount: number;
 
-    base: string;
+    base?: string;
     name?: string;
     hex: HEX;
     hsl: HSL;
@@ -47,7 +47,7 @@ export namespace ColorEntity {
 
     tints: HEX[];
 
-    constructor(base: string, obj?: IColor) {
+    constructor(base?: string, obj?: IColor) {
       this.base = base;
       this.name = obj?.name;
       this.hex = new HEX();
@@ -64,6 +64,11 @@ export namespace ColorEntity {
     }
 
     private init() {
+      if (this.base == null) {
+        // * Auto generated HSL value
+        this.base = this.hex.fromHsl(this.hsl).value;
+      }
+
       if (this.hex.isAcceptable(this.base)) {
         this.hex.set(this.base);
         this.rgb = this.rgb.fromHEX(this.base);
@@ -90,7 +95,6 @@ export namespace ColorEntity {
     private generateTints(hex?: HEX) {
       const hsl = this.hsl;
 
-      //debugger;
       // * Set tints
       for (
         let level = -this.defaultLevel + 1, j = 1;
@@ -231,11 +235,13 @@ export namespace ColorEntity {
     //private tints: HSL[] = [];
 
     constructor(obj?: IHSL) {
-      this.h = obj?.h ?? getRandom(0, 360);
+      this.h = obj?.h ?? getRandom(0, 360) / 360;
       this.s =
-        obj?.s ?? getRandom(obj?.satBound?.[0] ?? 50, obj?.satBound?.[1] ?? 50);
+        obj?.s ??
+        getRandom(obj?.satBound?.[0] ?? 0, obj?.satBound?.[1] ?? 100) / 100;
       this.l =
-        obj?.l ?? getRandom(obj?.lumBound?.[0] ?? 50, obj?.lumBound?.[1] ?? 50);
+        obj?.l ??
+        getRandom(obj?.lumBound?.[0] ?? 20, obj?.lumBound?.[1] ?? 70) / 100;
     }
 
     set(value: string | IHSL) {
@@ -281,9 +287,9 @@ export namespace ColorEntity {
   }
 
   export class HEX implements ColorValidator {
-    value?: string;
+    value: string;
 
-    constructor(value?: string) {
+    constructor(value: string = '#2DCCC2') {
       this.value = value;
     }
 
