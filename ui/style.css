@@ -3,14 +3,11 @@ input {
 }
 
 #bottom-bar {
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
   display: flex;
   background-color: #ddd;
   padding-right: 1em;
   padding-left: 1em;
-  border-radius: 1em;
+  border-radius: 0.5em;
   margin-top: 0.5em;
 }
 
@@ -119,7 +116,6 @@ input {
   overflow: hidden;
   width: 40px;
   height: 40px;
-  border: solid 2px #ddd;
   border-radius: 40px;
 }
 
