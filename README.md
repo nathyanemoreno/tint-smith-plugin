@@ -14,13 +14,12 @@ Welcome to TintSmith! This Figma plugin generates tints from given colors and in
 - Easy Integration: Apply color schemes to your Figma Color Styles effortlessly.
 - Generate beautiful colors to Design Kit.
 - Get contrast colors from black and white.
- 
+
 ### Future additions
 
 - Create calculated semantic colors for consistent UI designs.
 - Export color schemes in various formats (CSS, JSON, etc.).
 - Get contrast colors from color combinations.
-
 
 ### Image Examples
 
@@ -28,9 +27,20 @@ Welcome to TintSmith! This Figma plugin generates tints from given colors and in
 
 <img src="./assets/plugin-ui.png" alt="PluginUI" width="500"/>
 
-#### Design Kit Generated
+#### Output
 
-<img src="./assets/design-kit.png" alt="DesignKit" width="500"/>
+<table align="center">
+  <tr>
+    <td>Design Kit</td>
+     <td>Style</td>
+  </tr>
+  <tr>
+	<td> <img src="./assets/design-kit.png" alt="DesignKit" height="480"/> </td>
+	<td> <img src="./assets/color-style.png" alt="DesignKit" height="480"/> </td>
+  </tr>
+ </table>
+
+#### Color Style Generated
 
 ### Collaborators
 
