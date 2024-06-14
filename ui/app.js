@@ -15,24 +15,22 @@ function postMessage(message) {
 
 onmessage = (event) => {
   const message = JSON.parse(event.data.pluginMessage);
+  let id = message.data.id;
   let color = message.data.color;
-  let item = message.data.picker;
 
   switch (message.type) {
     case 'add-color':
-      addColor(color);
+      addColor(id, color);
       document
         .getElementById('colors-list')
         .scrollTo(0, document.body.scrollHeight);
 
-      // ! TODO: fix remove color with same id
       resetRemoveButtons();
-
       break;
 
     case 'pick-tints':
-      const colorPicker = document.getElementById(`color-input-${item}`);
-      const colorName = document.getElementById(`colorName-${item}`);
+      const colorPicker = document.getElementById(`color-input-${id}`);
+      const colorName = document.getElementById(`colorName-${id}`);
 
       colorName.disabled = true;
 
@@ -44,7 +42,7 @@ onmessage = (event) => {
           postMessage({
             type: 'color-name',
             data: {
-              picker: item,
+              colorId: id,
               name: name,
             },
           });
@@ -55,14 +53,12 @@ onmessage = (event) => {
 
       color.tints.forEach((tintHex, j) => {
         const picker = document.querySelector(
-          `#color-container-${item} ul li div #tint-${j + 1}00`,
+          `#color-container-${id} ul li div #tint-${j + 1}00`,
         );
         picker.value = tintHex.value;
 
         const tint = document.querySelector(
-          `#color-container-${item} ul li label.input-tint-label.tint-${
-            j + 1
-          }00`,
+          `#color-container-${id} ul li label.input-tint-label.tint-${j + 1}00`,
         );
         tint.textContent = tintHex.value;
       });
@@ -99,18 +95,15 @@ function resetRemoveButtons() {
 
   const colorButton = document.querySelector(`.icon-button`);
 
-  log(disabled, colorButton);
   colorButton.disabled = disabled;
 
   const colorIcon = document.querySelector(`.icon-button i`);
   colorIcon.className = `icon icon--trash ${disabled ? 'icon--disabled' : ''}`;
 }
 
-function addColor(color) {
+function addColor(colorId, color) {
   const hex = color.hex.value;
   const colorsContainer = document.getElementById('colors');
-  const colorNumber =
-    colorsContainer.querySelectorAll('[itemprop=picker]').length + 1 || 1;
 
   const createElement = (tag, attributes = {}, ...children) => {
     const element = document.createElement(tag);
@@ -137,12 +130,12 @@ function addColor(color) {
   const colorItem = createElement('div', {
     itemscope: '',
     className: 'row',
-    id: `picker-container-${colorNumber}`,
+    id: `picker-container-${colorId}`,
   });
   const colorForm = createElement('form', {
     itemprop: 'picker',
     className: 'color-picker column align-center',
-    id: `color-picker-${colorNumber}`,
+    id: `color-picker-${colorId}`,
   });
 
   const fieldset = createElement('fieldset', {
@@ -152,14 +145,14 @@ function addColor(color) {
     type: 'color',
     value: hex,
     className: 'input-color',
-    id: `color-input-${colorNumber}`,
+    id: `color-input-${colorId}`,
   });
   const colorLabel = createElement(
     'label',
     {
-      id: `input-label-${colorNumber}`,
+      id: `input-label-${colorId}`,
       className: 'input-color-label',
-      htmlFor: `color-input-${colorNumber}`,
+      htmlFor: `color-input-${colorId}`,
     },
     hex,
   );
@@ -168,11 +161,11 @@ function addColor(color) {
   colorForm.append(fieldset, colorLabel);
 
   const colorContainer = createElement('div', {
-    id: `color-container-${colorNumber}`,
+    id: `color-container-${colorId}`,
     className: 'column',
   });
   const colorNameInput = createElement('input', {
-    id: `colorName-${colorNumber}`,
+    id: `colorName-${colorId}`,
     className: 'input__field input-field',
     type: 'input',
     placeholder: 'name',
@@ -188,7 +181,7 @@ function addColor(color) {
       postMessage({
         type: 'color-name',
         data: {
-          picker: colorNumber,
+          picker: colorId,
           name: response.name.value,
         },
       });
@@ -200,14 +193,14 @@ function addColor(color) {
     colorNameInput,
   );
   const colorButton = createElement('button', {
-    id: `remove-button-${colorNumber}`,
+    id: `remove-button-${colorId}`,
     className: 'icon-button',
   });
 
-  colorButton.disabled = colorNumber <= 1;
+  colorButton.disabled = colorId <= 1;
 
   const colorIcon = createElement('i', {
-    className: `icon icon--trash ${colorNumber === 1 ? 'icon--disabled' : ''}`,
+    className: `icon icon--trash ${colorId === 1 ? 'icon--disabled' : ''}`,
   });
 
   colorButton.appendChild(colorIcon);
@@ -255,15 +248,15 @@ function addColor(color) {
   colorItem.append(colorForm, colorContainer);
   colorsContainer.appendChild(colorItem);
 
-  const colorPicker = document.getElementById(`color-input-${colorNumber}`);
-  const colorName = document.getElementById(`colorName-${colorNumber}`);
+  const colorPicker = document.getElementById(`color-input-${colorId}`);
+  const colorName = document.getElementById(`colorName-${colorId}`);
 
   // * Send signal to connect tints from picker
   postMessage({
     type: 'pick-tints',
     data: {
+      colorId: colorId,
       hex: colorPicker.value,
-      picker: colorNumber,
       name: colorName.value,
     },
   });
@@ -274,16 +267,22 @@ function addColor(color) {
     postMessage({
       type: 'pick-tints',
       data: {
+        colorId: colorId,
         hex: colorPicker.value,
-        picker: colorNumber,
         name: colorName.value,
       },
     });
   });
 
-  document.getElementById(`remove-button-${colorNumber}`).onclick = () => {
-    log(`${colorNumber}`);
-    document.getElementById(`picker-container-${colorNumber}`).remove();
+  document.getElementById(`remove-button-${colorId}`).onclick = () => {
+    document.getElementById(`picker-container-${colorId}`).remove();
+
+    postMessage({
+      type: 'remove-color',
+      data: {
+        colorId: colorId,
+      },
+    });
 
     resetRemoveButtons();
   };
