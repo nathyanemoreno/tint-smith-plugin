@@ -15,9 +15,7 @@
   "networkAccess": {
     "allowedDomains": [
       "https://cdn.jsdelivr.net",
-      "https://rsms.me",
-      "https://www.thecolorapi.com",
-      "https://fastly.picsum.photos"
+      "https://www.thecolorapi.com"
     ],
     "devAllowedDomains": [
       "http://localhost:3000"
