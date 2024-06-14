@@ -1,5 +1,7 @@
 import { hexToRgb, hslToRgb, rgbToHex, rgbToHls, rgbToObject } from './convert';
 
+export type ColorMap<K = string, V = ColorEntity.Color> = Map<K, V>;
+
 export namespace ColorEntity {
   export interface ColorValidator {
     isAcceptable(value: string): boolean;
@@ -336,3 +338,15 @@ export function generateTint(
   // * Return the lightness tint
   return hslToRgb(h, lightness, s);
 }
+
+//const fetchColor = (colorPicker, callback) =>
+//  debounce(() => {
+//    const hex = colorPicker.value.replace('#', '');
+//    fetch(`https://www.thecolorapi.com/id?hex=${hex}&format=json`, {
+//      method: 'GET',
+//    })
+//      .then((response) => response.json())
+//      .then((response) => {
+//        callback(response.name.value);
+//      });
+//  }, 500);
